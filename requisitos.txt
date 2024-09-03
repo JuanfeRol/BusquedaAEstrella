@@ -1,0 +1,20 @@
+Utilizando la búsqueda A* encontrará la distancia más corta para llegar de un punto inicial (I)
+a un punto final (F) en una cuadrícula que permite 4 movimientos (arriba, abajo, derecha,
+izquierda). En dicha cuadrícula habrá obstáculos por los que no es posible transitar (O) así
+como terreno plano (P), montañoso (M) y pantano (A).
+
+-Lectura de archivo .txt
+-Organizar Estructura de datos y nodos
+-Nodos: Costo basado en el tipo de terreno
+-Posición (x,y)
+-Nodos Adyacentes (4) Arriba, abajo, derecha e izquierda
+-Búsqueda (Algoritmo A*)
+-Expansión de nodos
+-Creación de la función Heurística con funciones para calcular distancias. Propuesta:
+    Distancia de manhattan:
+-Mostrar cuadricula con el camino elegido para recorrer.
+-Opciones:
+    -Interfaz gráfica donde se muestre la cuadricula y se marque el camino
+recorrido
+-Imprimir en terminal la cuadricula.
+-Calcular costo total y tiempo que tardo el programa en ejecutarse
