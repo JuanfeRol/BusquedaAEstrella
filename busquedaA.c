@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+
 
 //Función para leer archivo *.txt y reconstruir la matriz
 char ** leerMatriz(const char* nombreArcivo, int* filas, int* columnas){
@@ -29,15 +31,39 @@ char ** leerMatriz(const char* nombreArcivo, int* filas, int* columnas){
     return matriz;
 }
 
+//Estructura de los nodos
+typedef struct nodo{
+
+//Posición del nodo
+int x, y;
+
+//Costos
+int costo_transito; //g(n)
+int costo_heuristica; //h(n)
+int costo_total; //f(n)
+
+struct nodo* arriba;
+struct nodo* abajo;
+struct nodo* izquierda;
+struct nodo* derecha;
+
+//Variable booleana para saber si el nodo ya fue visitado
+bool visitado;
+
+char tipoTerreno;//(I (inicio), F(Final), P (Plano), M(Montaña), A(Pantano))
+} nodo;
+
+
 //Función para imprimir la matriz (Prueba)
-void imprimirMatriz(char** matriz, int filas, int columnas){
-    for (int i = 0; i < filas; i++){
-        for (int j = 0; j < columnas; j++){
-            printf("%c ", matriz[i][j]);
-        }
-        printf("\n");
-    }
-}
+//void imprimirMatriz(char** matriz, int filas, int columnas){
+//    for (int i = 0; i < filas; i++){
+//        for (int j = 0; j < columnas; j++){
+//            printf("%c ", matriz[i][j]);
+//        }
+//        printf("\n");
+//    }
+//}
+
 
 
 int main(){
