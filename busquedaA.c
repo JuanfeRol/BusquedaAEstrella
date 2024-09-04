@@ -72,24 +72,32 @@ void liberarMatriz(char** matriz, int filas){
 }
 
 // Función para leer archivo *.txt y reconstruir la matriz de nodos
+// Función para leer archivo *.txt y reconstruir la matriz de nodos
 nodo** crearNodosDesdeMatriz(char** matriz, int filas, int columnas) {
     nodo** nodos = (nodo**)malloc(filas * sizeof(nodo*));
     for (int i = 0; i < filas; i++) {
         nodos[i] = (nodo*)malloc(columnas * sizeof(nodo));
         for (int j = 0; j < columnas; j++) {
-            nodos[i][j].x = i;
-            nodos[i][j].y = j;
+            nodos[i][j].x = i+1;
+            nodos[i][j].y = j+1;
             nodos[i][j].tipoTerreno = matriz[i][j];
             nodos[i][j].visitado = false;
             nodos[i][j].costo_transito = 0;
             nodos[i][j].costo_heuristica = 0;
             nodos[i][j].costo_total = 0;
+
+            // Inicializar todos los punteros a NULL
+            nodos[i][j].arriba = NULL;
+            nodos[i][j].abajo = NULL;
+            nodos[i][j].izquierda = NULL;
+            nodos[i][j].derecha = NULL;
             
             // Enlaces a nodos adyacentes
-            nodos[i][j].arriba = (i > 0) ? &nodos[i-1][j] : NULL;
-            nodos[i][j].abajo = (i < filas - 1) ? &nodos[i+1][j] : NULL;
-            nodos[i][j].izquierda = (j > 0) ? &nodos[i][j-1] : NULL;
-            nodos[i][j].derecha = (j < columnas - 1) ? &nodos[i][j+1] : NULL;
+            if (i > 0) nodos[i][j].arriba = &nodos[i-1][j];
+            if (i < filas - 1) nodos[i][j].abajo = &nodos[i][j];
+            if (j > 0) nodos[i][j].izquierda = &nodos[i][j];
+            if (j < columnas - 1) nodos[i][j].derecha = &nodos[i][j];
+            printf("Nodo (%d, %d): Tipo de terreno: %c\n", nodos[i][j].x, nodos[i][j].y, nodos[i][j].tipoTerreno);
         }
     }
     return nodos;
