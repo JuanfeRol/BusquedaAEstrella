@@ -55,21 +55,83 @@ char tipoTerreno;//(I (inicio), F(Final), P (Plano), M(Montaña), A(Pantano))
 
 
 //Función para imprimir la matriz (Prueba)
-//void imprimirMatriz(char** matriz, int filas, int columnas){
-//    for (int i = 0; i < filas; i++){
-//        for (int j = 0; j < columnas; j++){
-//            printf("%c ", matriz[i][j]);
-//        }
-//        printf("\n");
-//    }
-//}
+void imprimirMatriz(char** matriz, int filas, int columnas){
+    for (int i = 0; i < filas; i++){
+        for (int j = 0; j < columnas; j++){
+            printf("%c ", matriz[i][j]);
+        }
+        printf("\n");
+    }
+}
 
+void liberarMatriz(char** matriz, int filas){
+    for (int i = 0; i < filas; i++){
+        free(matriz[i]);
+    }
+    free(matriz);
+}
 
+// Función para leer archivo *.txt y reconstruir la matriz de nodos
+nodo** crearNodosDesdeMatriz(char** matriz, int filas, int columnas) {
+    nodo** nodos = (nodo**)malloc(filas * sizeof(nodo*));
+    for (int i = 0; i < filas; i++) {
+        nodos[i] = (nodo*)malloc(columnas * sizeof(nodo));
+        for (int j = 0; j < columnas; j++) {
+            nodos[i][j].x = i;
+            nodos[i][j].y = j;
+            nodos[i][j].tipoTerreno = matriz[i][j];
+            nodos[i][j].visitado = false;
+            nodos[i][j].costo_transito = 0;
+            nodos[i][j].costo_heuristica = 0;
+            nodos[i][j].costo_total = 0;
+            
+            // Enlaces a nodos adyacentes
+            nodos[i][j].arriba = (i > 0) ? &nodos[i-1][j] : NULL;
+            nodos[i][j].abajo = (i < filas - 1) ? &nodos[i+1][j] : NULL;
+            nodos[i][j].izquierda = (j > 0) ? &nodos[i][j-1] : NULL;
+            nodos[i][j].derecha = (j < columnas - 1) ? &nodos[i][j+1] : NULL;
+        }
+    }
+    return nodos;
+}
+
+// Función para liberar la memoria de los nodos
+void liberarNodos(nodo** nodos, int filas) {
+    for (int i = 0; i < filas; i++) {
+        free(nodos[i]);
+    }
+    free(nodos);
+}
+
+// Función para imprimir los nodos
+void imprimirNodos(nodo** nodos, int filas, int columnas) {
+    for (int i = 0; i < filas; i++) {
+        for (int j = 0; j < columnas; j++) {
+            nodo actual = nodos[i][j];
+            printf("Nodo (%d, %d): Tipo de terreno: %c\n", actual.x, actual.y, actual.tipoTerreno);
+            
+            if (actual.arriba != NULL)
+                printf("\tArriba: (%d, %d)\n", actual.arriba->x, actual.arriba->y);
+            if (actual.abajo != NULL)
+                printf("\tAbajo: (%d, %d)\n", actual.abajo->x, actual.abajo->y);
+            if (actual.izquierda != NULL)
+                printf("\tIzquierda: (%d, %d)\n", actual.izquierda->x, actual.izquierda->y);
+            if (actual.derecha != NULL)
+                printf("\tDerecha: (%d, %d)\n", actual.derecha->x, actual.derecha->y);
+        }
+    }
+}
 
 int main(){
     int filas, columnas;
     char** matriz = leerMatriz("Matriz1.txt", &filas, &columnas);
     imprimirMatriz(matriz, filas, columnas);
+    nodo** nodos = crearNodosDesdeMatriz(matriz, filas, columnas);
+    imprimirNodos(nodos, filas, columnas);
+    liberarNodos(nodos, filas);
+    liberarMatriz(matriz, filas);
+
+
     return 0;
 
 }
