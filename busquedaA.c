@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-
 //Función para leer archivo *.txt y reconstruir la matriz
 char ** leerMatriz(const char* nombreArcivo, int* filas, int* columnas){
     FILE* archivo = fopen(nombreArcivo, "r");
@@ -54,6 +53,12 @@ char tipoTerreno;//(I (inicio), F(Final), P (Plano), M(Montaña), A(Pantano))
 } nodo;
 
 
+// Punteros para los nodos de inicio y final
+nodo* nodoInicio = NULL;
+nodo* nodoFinal = NULL;
+
+
+
 //Función para imprimir la matriz (Prueba)
 void imprimirMatriz(char** matriz, int filas, int columnas){
     for (int i = 0; i < filas; i++){
@@ -72,7 +77,6 @@ void liberarMatriz(char** matriz, int filas){
 }
 
 // Función para leer archivo *.txt y reconstruir la matriz de nodos
-// Función para leer archivo *.txt y reconstruir la matriz de nodos
 nodo** crearNodosDesdeMatriz(char** matriz, int filas, int columnas) {
     nodo** nodos = (nodo**)malloc(filas * sizeof(nodo*));
     for (int i = 0; i < filas; i++) {
@@ -86,6 +90,14 @@ nodo** crearNodosDesdeMatriz(char** matriz, int filas, int columnas) {
             nodos[i][j].costo_heuristica = 0;
             nodos[i][j].costo_total = 0;
 
+            // Guardar los nodos de inicio y final
+            if (nodos[i][j].tipoTerreno == 'I') {
+                nodoInicio = &nodos[i][j];
+            }
+            if (nodos[i][j].tipoTerreno == 'F') {
+                nodoFinal = &nodos[i][j];
+            }
+
             // Inicializar todos los punteros a NULL
             nodos[i][j].arriba = NULL;
             nodos[i][j].abajo = NULL;
@@ -97,7 +109,6 @@ nodo** crearNodosDesdeMatriz(char** matriz, int filas, int columnas) {
             if (i < filas - 1) nodos[i][j].abajo = &nodos[i][j];
             if (j > 0) nodos[i][j].izquierda = &nodos[i][j];
             if (j < columnas - 1) nodos[i][j].derecha = &nodos[i][j];
-            printf("Nodo (%d, %d): Tipo de terreno: %c\n", nodos[i][j].x, nodos[i][j].y, nodos[i][j].tipoTerreno);
         }
     }
     return nodos;
@@ -130,15 +141,21 @@ void imprimirNodos(nodo** nodos, int filas, int columnas) {
     }
 }
 
+//Funcion de creacion de costo heuristico basado en la distancia manhataan
+//(Proceso)
+int costoHeuristico(nodo* nodoActual, nodo* nodoFinal){
+    return abs(nodoActual->x - nodoFinal->x) + abs(nodoActual->y - nodoFinal->y);
+}
+
+
 int main(){
     int filas, columnas;
     char** matriz = leerMatriz("Matriz1.txt", &filas, &columnas);
     imprimirMatriz(matriz, filas, columnas);
     nodo** nodos = crearNodosDesdeMatriz(matriz, filas, columnas);
-    imprimirNodos(nodos, filas, columnas);
+    //imprimirNodos(nodos, filas, columnas);
     liberarNodos(nodos, filas);
     liberarMatriz(matriz, filas);
-
 
     return 0;
 
