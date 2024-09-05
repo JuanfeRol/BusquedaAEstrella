@@ -206,12 +206,13 @@ void busquedaA(nodo** nodos, int filas, int columnas) {
             if (vecino != NULL && !vecino->visitado && vecino->tipoTerreno != 'O') {  // Ignorar nodos visitados y obstáculos
                 // Calcular el costo de transito acumulativo
                 int nuevo_costo_transito = actual->costo_transito + vecino->costo_transito;
-
+                printf("\nCosto Heruistico actual: %d", actual->costo_heuristica);
+                printf("\nCordenadans actuales: %d %d", actual->x, actual->y);
                 // Calcular el costo total f(n) = g(n) + h(n)
                 int nuevo_costo_total = nuevo_costo_transito + vecino->costo_heuristica;
 
                 // Actualizar si se encuentra un mejor nodo
-                if (nuevo_costo_total <= mejor_costo_total) {
+                if (nuevo_costo_total < mejor_costo_total) {
                     mejor_siguiente = vecino;
                     mejor_costo_total = nuevo_costo_total;
                         //printf("Costo = %d\n", nuevo_costo_total);
@@ -247,7 +248,7 @@ int main(){
     
     //Lectura de la matriz
     //Colocar el nombre del archivo
-    char** matriz = leerMatriz("UNO.txt", &filas, &columnas);
+    char** matriz = leerMatriz("TRES.txt", &filas, &columnas);
 
     printf("Matriz original leida:\n");
     imprimirMatriz(matriz, filas, columnas);
