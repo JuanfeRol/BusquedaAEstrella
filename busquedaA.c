@@ -13,7 +13,7 @@ char ** leerMatriz(const char* nombreArcivo, int* filas, int* columnas){
     }
 
     //Lectura de las dimensiones de la matriz
-    fscanf(archivo, "%d %d", columnas, filas);
+    fscanf(archivo, "%d %d", filas, columnas);
 
     //Se reserva memoria para la matriz
     char** matriz = (char**)malloc(*filas*sizeof(char*));
@@ -22,9 +22,9 @@ char ** leerMatriz(const char* nombreArcivo, int* filas, int* columnas){
     }
     
     //Se llena la matriz con las letras del archivo
-    for (int i = 0; i < *filas; i++){
-        for (int j = 0; j < *columnas; j++){
-            fscanf(archivo, " %c", &matriz[i][j]);
+    for (int i = 0; i < *columnas; i++){
+        for (int j = 0; j < *filas; j++){
+            fscanf(archivo, " %c", &matriz[j][i]);
         }
     }
 
@@ -199,7 +199,7 @@ void busquedaA(nodo** nodos, int filas, int columnas) {
         int mejor_costo_total = 1000000;  // Un número grande como infinito
 
         // Explorar los vecinos del nodo actual
-        nodo* vecinos[] = {actual->arriba, actual->abajo, actual->izquierda, actual->derecha};
+        nodo* vecinos[] = {actual->derecha, actual->arriba, actual->abajo, actual->izquierda};
         for (int i = 0; i < 4; i++) {
             nodo* vecino = vecinos[i];
 
@@ -246,6 +246,7 @@ int main(){
     int filas, columnas;
     
     //Lectura de la matriz
+    //Colocar el nombre del archivo
     char** matriz = leerMatriz("UNO.txt", &filas, &columnas);
 
     printf("Matriz original leida:\n");
