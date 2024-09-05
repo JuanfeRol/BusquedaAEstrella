@@ -1,6 +1,8 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <time.h>
 
 //Función para leer archivo *.txt y reconstruir la matriz
 char ** leerMatriz(const char* nombreArcivo, int* filas, int* columnas){
@@ -82,8 +84,8 @@ nodo** crearNodosDesdeMatriz(char** matriz, int filas, int columnas) {
     for (int i = 0; i < filas; i++) {
         nodos[i] = (nodo*)malloc(columnas * sizeof(nodo));
         for (int j = 0; j < columnas; j++) {
-            nodos[i][j].x = i+1;
-            nodos[i][j].y = j+1;
+            nodos[i][j].x = i;
+            nodos[i][j].y = j;
             nodos[i][j].tipoTerreno = matriz[i][j];
             nodos[i][j].visitado = false;
             nodos[i][j].costo_transito = 0;
@@ -97,22 +99,47 @@ nodo** crearNodosDesdeMatriz(char** matriz, int filas, int columnas) {
             if (nodos[i][j].tipoTerreno == 'F') {
                 nodoFinal = &nodos[i][j];
             }
+            if (nodos[i][j].tipoTerreno == 'P') {
+                nodos[i][j].costo_transito = 1;
+            }
+            if (nodos[i][j].tipoTerreno == 'M') {   
+                nodos[i][j].costo_transito = 2;
+            }
+            if (nodos[i][j].tipoTerreno == 'A') {
+                nodos[i][j].costo_transito = 3;
+            }
+            if (nodos[i][j].tipoTerreno == 'O') {
+                nodos[i][j].costo_transito = 100;
+            }
+        }
+    }
 
-            // Inicializar todos los punteros a NULL
+//Se asginan enlaces a los nodos adyacentes
+for (int i = 0; i < filas; i++) {
+        for (int j = 0; j < columnas; j++) { 
             nodos[i][j].arriba = NULL;
             nodos[i][j].abajo = NULL;
             nodos[i][j].izquierda = NULL;
             nodos[i][j].derecha = NULL;
-            
-            // Enlaces a nodos adyacentes
+
             if (i > 0) nodos[i][j].arriba = &nodos[i-1][j];
-            if (i < filas - 1) nodos[i][j].abajo = &nodos[i][j];
-            if (j > 0) nodos[i][j].izquierda = &nodos[i][j];
-            if (j < columnas - 1) nodos[i][j].derecha = &nodos[i][j];
+            if (i < filas - 1) nodos[i][j].abajo = &nodos[i+1][j];
+            if (j > 0) nodos[i][j].izquierda = &nodos[i][j-1];
+            if (j < columnas - 1) nodos[i][j].derecha = &nodos[i][j+1];
         }
     }
+
+    // Calcular el costo heurístico para cada nodo
+    for (int i = 0; i < filas; i++) {
+        for (int j = 0; j < columnas; j++) {
+            nodos[i][j].costo_heuristica = costoHeuristico(&nodos[i][j], nodoFinal);
+        }
+    }
+
     return nodos;
 }
+
+
 
 // Función para liberar la memoria de los nodos
 void liberarNodos(nodo** nodos, int filas) {
@@ -137,6 +164,8 @@ void imprimirNodos(nodo** nodos, int filas, int columnas) {
                 printf("\tIzquierda: (%d, %d)\n", actual.izquierda->x, actual.izquierda->y);
             if (actual.derecha != NULL)
                 printf("\tDerecha: (%d, %d)\n", actual.derecha->x, actual.derecha->y);
+            printf("costo heuristico: %d\n", actual.costo_heuristica);  
+            printf("costo transito: %d\n", actual.costo_transito);  
         }
     }
 }
@@ -147,16 +176,88 @@ int costoHeuristico(nodo* nodoActual, nodo* nodoFinal){
     return abs(nodoActual->x - nodoFinal->x) + abs(nodoActual->y - nodoFinal->y);
 }
 
+//Funcion para imprimir los nodos como matriz (modificada)
+void imprimirNodosAsMatriz(nodo** nodos, int filas, int columnas) {
+    for (int i = 0; i < filas; i++) {
+        for (int j = 0; j < columnas; j++) {
+            printf("%c ", nodos[i][j].tipoTerreno);
+        }
+        printf("\n");
+    }
+}
+
+//Funcion para la busqueda A*
+// Función para realizar la búsqueda A*
+void busquedaA(nodo** nodos, int filas, int columnas) {
+    nodo* actual = nodoInicio; // Empezar desde el nodo inicial
+    actual->visitado = true;   // Marcar el nodo inicial como visitado
+    actual->costo_transito = 0;
+    actual->costo_total = actual->costo_heuristica;  // f(n) = g(n) + h(n)
+
+    while (actual != nodoFinal) {
+        nodo* mejor_siguiente = NULL;
+        int mejor_costo_total = 1000000;  // Un número grande como infinito
+
+        // Explorar los vecinos del nodo actual
+        nodo* vecinos[] = {actual->arriba, actual->abajo, actual->izquierda, actual->derecha};
+        for (int i = 0; i < 4; i++) {
+            nodo* vecino = vecinos[i];
+
+            if (vecino != NULL && !vecino->visitado && vecino->tipoTerreno != 'O') {  // Ignorar nodos visitados y obstáculos
+                // Calcular el costo de transito acumulativo
+                int nuevo_costo_transito = actual->costo_transito + vecino->costo_transito;
+
+                // Calcular el costo total f(n) = g(n) + h(n)
+                int nuevo_costo_total = nuevo_costo_transito + vecino->costo_heuristica;
+
+                // Actualizar si se encuentra un mejor nodo
+                if (nuevo_costo_total < mejor_costo_total) {
+                    mejor_siguiente = vecino;
+                    mejor_costo_total = nuevo_costo_total;
+                }
+            }
+        }
+
+        if (mejor_siguiente == NULL) {
+            printf("No hay un camino posible.\n");
+            return;
+        }
+
+        // Avanzar al mejor nodo
+        
+        actual->tipoTerreno = 'X';  // Marcar el camino
+        mejor_siguiente->tipoTerreno = 'X';  // Marcar el camino
+        mejor_siguiente->visitado = true;
+        mejor_siguiente->costo_transito = actual->costo_transito + mejor_siguiente->costo_transito;
+        mejor_siguiente->costo_total = mejor_siguiente->costo_transito + mejor_siguiente->costo_heuristica;
+        actual = mejor_siguiente;
+    }
+
+    printf("Camino encontrado.\n");
+}
 
 int main(){
     int filas, columnas;
+    
+    //Lectura de la matriz
     char** matriz = leerMatriz("Matriz1.txt", &filas, &columnas);
+
+    printf("Matriz original leida:\n");
     imprimirMatriz(matriz, filas, columnas);
+    printf("\n");
     nodo** nodos = crearNodosDesdeMatriz(matriz, filas, columnas);
     //imprimirNodos(nodos, filas, columnas);
+    // Medir el tiempo de la búsqueda A*
+    clock_t inicio = clock();  // Tiempo de inicio
+    busquedaA(nodos, filas, columnas);
+    clock_t fin = clock();     // Tiempo de fin
+    double tiempo_usado = ((double) (fin - inicio)) / CLOCKS_PER_SEC;  // Cálculo del tiempo en segundos
+
+    printf("Tiempo de búsqueda A*: %f segundos\n", tiempo_usado);    
+    
+    imprimirNodosAsMatriz(nodos, filas, columnas);
     liberarNodos(nodos, filas);
     liberarMatriz(matriz, filas);
-
     return 0;
 
-}
+}          
