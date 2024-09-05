@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-  
+
 //Función para leer archivo *.txt y reconstruir la matriz
 char ** leerMatriz(const char* nombreArcivo, int* filas, int* columnas){
     FILE* archivo = fopen(nombreArcivo, "r");
@@ -31,27 +31,30 @@ char ** leerMatriz(const char* nombreArcivo, int* filas, int* columnas){
     return matriz;
 }
 
-//Estructura de los nodos
-typedef struct nodo{
+typedef struct nodo {
+    // Posición del nodo
+    int x, y;
 
-//Posición del nodo
-int x, y;
+    // Costos
+    int costo_transito;    // g(n)
+    int costo_heuristica;  // h(n)
+    int costo_total;       // f(n)
 
-//Costos
-int costo_transito; //g(n)
-int costo_heuristica; //h(n)
-int costo_total; //f(n)
+    struct nodo* arriba;
+    struct nodo* abajo;
+    struct nodo* izquierda;
+    struct nodo* derecha;
 
-struct nodo* arriba;
-struct nodo* abajo;
-struct nodo* izquierda;
-struct nodo* derecha;
+    bool visitado;
+    
+    // Tipo de terreno
+    char tipoTerreno; // I (inicio), F (final), P (plano), M (montaña), A (pantano)
 
-//Variable booleana para saber si el nodo ya fue visitado
-bool visitado;
+    // Nodo padre para reconstruir el camino
+    struct nodo* padre;
 
-char tipoTerreno;//(I (inicio), F(Final), P (Plano), M(Montaña), A(Pantano))
 } nodo;
+
 
 
 //Función para imprimir la matriz (Prueba)
@@ -70,6 +73,95 @@ void liberarMatriz(char** matriz, int filas){
     }
     free(matriz);
 }
+//calcular la funcion heuristica dado la distancia manhatan
+int calcularHeuristica(nodo* actual, nodo* objetivo) {
+    return abs(actual->x - objetivo->x) + abs(actual->y - objetivo->y);
+}
+//listas abiertas o cerradas según el caso
+#include <limits.h>  // Para usar INT_MAX
+
+nodo* encontrarNodoConMenorCosto(nodo** listaAbierta, int tamanoLista) {
+    nodo* mejorNodo = NULL;
+    int menorCosto = INT_MAX;
+
+    for (int i = 0; i < tamanoLista; i++) {
+        if (listaAbierta[i] != NULL && listaAbierta[i]->costo_total < menorCosto) {
+            menorCosto = listaAbierta[i]->costo_total;
+            mejorNodo = listaAbierta[i];
+        }
+    }
+    return mejorNodo;
+}
+//actualización de costo de recorrido y agregar nodos-vecinos a la lista
+void actualizarCostoYAgregarVecinos(nodo* actual, nodo* objetivo, nodo** listaAbierta, int* tamanoLista) {
+    nodo* vecinos[] = {actual->arriba, actual->abajo, actual->izquierda, actual->derecha};
+
+    for (int i = 0; i < 4; i++) {
+        nodo* vecino = vecinos[i];
+        if (vecino != NULL && !vecino->visitado) {
+            int nuevoCostoTransito = actual->costo_transito + 1;  // Aquí puedes ajustar el costo por tipo de terreno
+
+            if (nuevoCostoTransito < vecino->costo_transito || vecino->costo_transito == 0) {
+                vecino->costo_transito = nuevoCostoTransito;
+                vecino->costo_heuristica = calcularHeuristica(vecino, objetivo);
+                vecino->costo_total = vecino->costo_transito + vecino->costo_heuristica;
+
+                // Asignar el nodo padre
+                vecino->padre = actual;
+
+                // Agregar a la lista abierta
+                listaAbierta[*tamanoLista] = vecino;
+                (*tamanoLista)++;
+            }
+        }
+    }
+}
+//se reconstruye la ruta cuando se llega al nodo final
+void reconstruirRuta(nodo* objetivo) {
+    nodo* actual = objetivo;
+    printf("Ruta:\n");
+    
+    // Recorre hacia atrás hasta el nodo inicial
+    while (actual != NULL) {
+        printf("(%d, %d) <- ", actual->x, actual->y);
+        actual = actual->padre;
+    }
+    printf("Inicio\n");
+}
+//funcion A estrella
+void aEstrella(nodo* inicio, nodo* objetivo, int filas, int columnas) {
+    nodo* listaAbierta[filas * columnas];
+    int tamanoListaAbierta = 0;
+    
+    listaAbierta[tamanoListaAbierta++] = inicio;
+
+    while (tamanoListaAbierta > 0) {
+        nodo* actual = encontrarNodoConMenorCosto(listaAbierta, tamanoListaAbierta);
+
+        if (actual == objetivo) {
+            printf("Camino encontrado con costo total: %d\n", actual->costo_total);
+            reconstruirRuta(objetivo);
+            return;
+        }
+
+        actual->visitado = true;
+
+        // Eliminar de la lista abierta (simplificado)
+        for (int i = 0; i < tamanoListaAbierta; i++) {
+            if (listaAbierta[i] == actual) {
+                listaAbierta[i] = NULL;
+                break;
+            }
+        }
+
+        // Actualizar costos y agregar vecinos a la lista abierta
+        actualizarCostoYAgregarVecinos(actual, objetivo, listaAbierta, &tamanoListaAbierta);
+    }
+    printf("No se encontró camino\n");
+}
+
+
+
 
 // Función para leer archivo *.txt y reconstruir la matriz de nodos
 // Función para leer archivo *.txt y reconstruir la matriz de nodos
