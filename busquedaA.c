@@ -13,7 +13,7 @@ char ** leerMatriz(const char* nombreArcivo, int* filas, int* columnas){
     }
 
     //Lectura de las dimensiones de la matriz
-    fscanf(archivo, "%d %d", filas, columnas);
+    fscanf(archivo, "%d %d", columnas, filas);
 
     //Se reserva memoria para la matriz
     char** matriz = (char**)malloc(*filas*sizeof(char*));
@@ -211,9 +211,11 @@ void busquedaA(nodo** nodos, int filas, int columnas) {
                 int nuevo_costo_total = nuevo_costo_transito + vecino->costo_heuristica;
 
                 // Actualizar si se encuentra un mejor nodo
-                if (nuevo_costo_total < mejor_costo_total) {
+                if (nuevo_costo_total <= mejor_costo_total) {
                     mejor_siguiente = vecino;
                     mejor_costo_total = nuevo_costo_total;
+                        //printf("Costo = %d\n", nuevo_costo_total);
+
                 }
             }
         }
@@ -231,7 +233,11 @@ void busquedaA(nodo** nodos, int filas, int columnas) {
         mejor_siguiente->costo_transito = actual->costo_transito + mejor_siguiente->costo_transito;
         mejor_siguiente->costo_total = mejor_siguiente->costo_transito + mejor_siguiente->costo_heuristica;
         actual = mejor_siguiente;
+       //imprimir costo
+
     }
+
+    printf("Costo = %d\n", actual->costo_transito);
 
     printf("Camino encontrado.\n");
 }
@@ -240,7 +246,7 @@ int main(){
     int filas, columnas;
     
     //Lectura de la matriz
-    char** matriz = leerMatriz("Matriz1.txt", &filas, &columnas);
+    char** matriz = leerMatriz("UNO.txt", &filas, &columnas);
 
     printf("Matriz original leida:\n");
     imprimirMatriz(matriz, filas, columnas);
