@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-
+  
 //Función para leer archivo *.txt y reconstruir la matriz
 char ** leerMatriz(const char* nombreArcivo, int* filas, int* columnas){
     FILE* archivo = fopen(nombreArcivo, "r");
